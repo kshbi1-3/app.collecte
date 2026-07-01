@@ -13,7 +13,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # 1. السيرفر سيقوم بفك ضغط ملفك تلقائياً هنا
     - name: Unzip project file
       run: unzip parchisi-dice-collector.zip
 
@@ -23,19 +22,20 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # 2. هنا يكمن الحل! السيرفر يثبت Gradle من عنده لأن ملف gradlew مفقود
+    # تحديد إصدار مستقر 8.7 لحل مشكلة عدم التوافق
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '8.7'
 
-    # 3. السيرفر يدخل للمجلد ويفعل أمر البناء المباشر بدلاً من gradlew
     - name: Build with Gradle
       run: |
         cd parchisi-dice-collector
         gradle assembleDebug
 
-    # 4. رفع ملف الـ APK النهائي لك لتحميله
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: parchisi-dice-collector/app/build/outputs/apk/debug/app-debug.apk
+        
