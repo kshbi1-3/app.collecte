@@ -13,11 +13,11 @@ workflows:
       - name: Unzip project file
         script: |
           unzip parchisi-dice-collector.zip
-      - name: Fix Maven Repositories and Inject OpenCV
+      - name: Fix Maven Repositories and Inject OpenCV Library
         script: |
           cd parchisi-dice-collector
           
-          # 1. إعداد المستودعات لتنزيل المكتبات
+          # 1. إعداد المستودعات لتنزيل المكتبات عبر الإنترنت
           cat << 'EOF' > patch.gradle
           allprojects {
               repositories {
@@ -28,23 +28,12 @@ workflows:
           }
           EOF
           
-          # 2. حقن مكتبة OpenCV الرسمية داخل ملف build.gradle الخاص بالتطبيق
+          # 2. حقن مكتبة OpenCV لتغذية الكود برمجياً
           if [ -f app/build.gradle ]; then
               sed -i '/dependencies {/a \    implementation "com.github.jeziellago:OpenCV-Android:4.1.0"' app/build.gradle || true
           fi
           if [ -f app/build.gradle.kts ]; then
               sed -i '/dependencies {/a \    implementation("com.github.jeziellago:OpenCV-Android:4.1.0")' app/build.gradle.kts || true
-          fi
-      - name: Auto-Fix Kotlin Code Errors
-        script: |
-          cd parchisi-dice-collector/app/src/main/java/com/mavis/dicecollector
-          
-          # إغلاق التعليق المفتوح في TemplateLibrary
-          echo -e "\n*/" >> detector/TemplateLibrary.kt
-          
-          # إصلاح خطأ التابع excerptText بجعله يقبل أي نص فارغ كبديل مؤقت لتخطي الكومبيلر
-          if [ -f service/PushTriggerService.kt ]; then
-              sed -i 's/excerptText/""/g' service/PushTriggerService.kt || true
           fi
       - name: Build Android APK
         script: |
