@@ -16,13 +16,18 @@ jobs:
     - name: Unzip project file
       run: unzip parchisi-dice-collector.zip
 
+    # خطوة ذكية لإصلاح ملف الإعدادات وإضافة مستودعات المكاتب الناقصة لـ OpenCV
+    - name: Fix Maven Repositories for OpenCV
+      run: |
+        echo "repositories { mavenCentral(); google(); maven { url 'https://maven.aliyun.com/repository/public' } }" > init.gradle
+        sed -i 's/mavenCentral()/mavenCentral(); google(); maven { url "https://repo-mirror.com" }/g' parchisi-dice-collector/settings.gradle.kts || true
+
     - name: set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    # تحديد إصدار مستقر 8.7 لحل مشكلة عدم التوافق
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
       with:
@@ -31,7 +36,7 @@ jobs:
     - name: Build with Gradle
       run: |
         cd parchisi-dice-collector
-        gradle assembleDebug
+        gradle assembleDebug --init-script ../init.gradle
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
